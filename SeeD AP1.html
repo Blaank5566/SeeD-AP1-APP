@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>SeeD – AP1 Prüfungssimulation FIAE</title>
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--card2:#0b1220;--accent:#38bdf8;--accent2:#0ea5e9;--text:#e2e8f0;--muted:#94a3b8;--ok:#22c55e;--okbg:#052e16;--err:#ef4444;--errbg:#450a0a;--border:#334155}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  body{display:flex;justify-content:center;padding:1rem}
+  .app{width:100%;max-width:960px;background:var(--card);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.5);overflow:hidden;display:flex;flex-direction:column;min-height:calc(100vh - 2rem)}
+  header{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;background:var(--card2);border-bottom:1px solid var(--border)}
+  .brand{display:flex;align-items:baseline;gap:.5rem}
+  .logo{color:var(--accent);font-size:1.5rem}
+  .brand h1{margin:0;font-size:1.5rem;color:var(--accent);letter-spacing:2px}
+  .subtitle{color:var(--muted);font-size:.85rem;margin-left:.5rem}
+  .timer{font-variant-numeric:tabular-nums;font-weight:700;font-size:1.3rem;color:var(--accent);padding:.4rem .9rem;border:1px solid var(--border);border-radius:8px;background:#0f172a}
+  main{padding:1.5rem;flex:1}
+  h2{margin-top:0;color:var(--accent)}
+  h3{color:var(--text);margin:0 0 .5rem 0}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin:1.5rem 0}
+  .card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:1.2rem;display:flex;flex-direction:column;gap:.75rem}
+  .card p{color:var(--muted);font-size:.9rem;margin:0}
+  .btn{background:var(--accent);color:#0f172a;border:none;padding:.7rem 1.3rem;border-radius:8px;font-weight:700;cursor:pointer;font-size:.95rem;transition:.15s}
+  .btn:hover:not(:disabled){background:var(--accent2)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn.secondary{background:var(--border);color:var(--text)}
+  .btn.secondary:hover:not(:disabled){background:#475569}
+  .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
+  .btn.ghost:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+  .filters{margin-top:1.5rem}
+  .filter-list{display:flex;flex-wrap:wrap;gap:.5rem;margin:.75rem 0}
+  .filter-chip{padding:.4rem .9rem;border-radius:999px;border:1px solid var(--border);background:var(--card2);color:var(--muted);cursor:pointer;font-size:.85rem;transition:.15s}
+  .filter-chip.active{background:var(--accent);color:#0f172a;border-color:var(--accent)}
+  .hint{color:var(--muted);font-size:.85rem;margin-top:2rem}
+  .hidden{display:none !important}
+  .progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:1rem}
+  .progress-bar>div{height:100%;background:var(--accent);width:0;transition:width .3s}
+  .meta{display:flex;justify-content:space-between;color:var(--muted);font-size:.9rem;margin-bottom:.75rem}
+  .question{font-size:1.15rem;line-height:1.55;margin-bottom:1.25rem}
+  .options{display:grid;gap:.7rem;margin-bottom:1rem}
+  .option{background:var(--card2);border:1px solid var(--border);padding:.9rem 1rem;border-radius:8px;cursor:pointer;transition:.15s;line-height:1.4}
+  .option:hover{border-color:var(--accent)}
+  .option.selected{border-color:var(--accent);background:#1e293b}
+  .option.correct{border-color:var(--ok);background:var(--okbg)}
+  .option.wrong{border-color:var(--err);background:var(--errbg)}
+  .explanation{background:var(--card2);border-left:4px solid var(--accent);padding:.9rem 1rem;border-radius:0 8px 8px 0;margin-top:1rem;font-size:.95rem;line-height:1.5}
+  .actions{display:flex;gap:.6rem;margin-top:1.25rem;flex-wrap:wrap}
+  .actions.center{justify-content:center}
+  .result{text-align:center;padding:1rem 0}
+  .score{font-size:3.5rem;font-weight:800;color:var(--accent);line-height:1}
+  .status{font-size:1.4rem;font-weight:700;margin:.75rem 0}
+  .status.pass{color:var(--ok)}
+  .status.fail{color:var(--err)}
+  #detail-display{color:var(--muted)}
+  .review{margin-top:2rem}
+  .review-item{padding:.9rem 1rem;border-radius:8px;background:var(--card2);margin-bottom:.6rem;border-left:4px solid var(--border);font-size:.9rem;line-height:1.5}
+  .review-item.correct{border-left-color:var(--ok)}
+  .review-item.wrong{border-left-color:var(--err)}
+  .review-item .q{font-weight:600;margin-bottom:.4rem}
+  .review-item .ans{color:var(--ok)}
+  .review-item .ans-bad{color:var(--err)}
+  footer{padding:1rem 1.5rem;text-align:center;color:var(--muted);font-size:.8rem;border-top:1px solid var(--border);background:var(--card2)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><span class="logo">◈</span><h1>SeeD</h1><span class="subtitle">AP1 Prüfungssimulation · FIAE</span></div>
+    <div class="timer" id="timer">90:00</div>
+  </header>
+  <main>
+    <section id="start-screen">
+      <h2>Willkommen bei SeeD</h2>
+      <p>Deine portable Prüfungssimulation für die <strong>Abschlussprüfung Teil 1</strong> (FIAE).</p>
+      <div class="grid">
+        <div class="card"><h3>🎯 Prüfungsmodus</h3><p>90 Minuten · alle Fragen · Bestehensgrenze 50 %</p><button class="btn" data-mode="exam">Prüfung starten</button></div>
+        <div class="card"><h3>📚 Training</h3><p>10 Fragen pro Runde · mit Erklärungen</p><button class="btn secondary" data-mode="train">Training starten</button></div>
+        <div class="card"><h3>⚡ Blitz</h3><p>5 zufällige Fragen · ohne Timer</p><button class="btn secondary" data-mode="blitz">Blitz starten</button></div>
+      </div>
+      <div class="filters">
+        <h3>Optional: Kategorien einschränken</h3>
+        <div id="category-filters" class="filter-list"></div>
+        <button class="btn ghost" id="filter-reset">Alle Kategorien</button>
+      </div>
+      <p class="hint">Enthält 50 AP1-typische Beispielaufgaben. Eigene Fragen kannst du in der Datei <code>questions.js</code> ergänzen (Anleitung unten im Chat).</p>
+    </section>
+    <section id="quiz-screen" class="hidden">
+      <div class="progress-bar"><div id="progress"></div></div>
+      <div class="meta"><span id="question-counter"></span><span id="category-label"></span></div>
+      <div class="question" id="question-text"></div>
+      <div class="options" id="options-container"></div>
+      <div class="explanation hidden" id="explanation"></div>
+      <div class="actions">
+        <button class="btn" id="confirm-btn" disabled>Antwort bestätigen</button>
+        <button class="btn hidden" id="next-btn">Nächste Frage</button>
+      </div>
+    </section>
+    <section id="result-screen" class="hidden">
+      <div class="result">
+        <h2>Auswertung</h2>
+        <div class="score" id="score-display">0 %</div>
+        <div class="status" id="status-display"></div>
+        <p id="detail-display"></p>
+        <div class="actions center">
+          <button class="btn" id="restart-btn">Neue Simulation</button>
+          <button class="btn secondary" id="export-btn">Ergebnis exportieren</button>
+        </div>
+      </div>
+      <div class="review" id="review-container"></div>
+    </section>
+  </main>
+  <footer>SeeD v1.0 · AP1 Simulation FIAE · portabel · keine Installation nötig</footer>
+</div>
+
+<script>
+const QUESTIONS = [
+  {c:"Netzwerktechnik",t:"Welche ist die kürzeste korrekte Schreibweise für die IPv6-Adresse 2001:0db8:0000:0000:0000:ff00:0042:8329?",o:["2001:db8::ff00:42:8329","2001:db8:0:0:0:ff00:42:8329","2001:db8::ff00:0042:8329","2001:db8:0:0:0:ff00:42:8329"],a:0,e:"IPv6 kürzt führende Nullen und fasst aufeinanderfolgende Nullblöcke zu '::' zusammen – nur einmal pro Adresse."},
+  {c:"Netzwerktechnik",t:"Wie viele Festplatten können bei RAID 5 ohne Datenverlust ausfallen?",o:["0","1","2","3"],a:1,e:"RAID 5 verteilt Paritätsinformationen und verkraftet den Ausfall genau einer Platte."},
+  {c:"Netzwerktechnik",t:"Auf welcher Schicht des OSI-Modells arbeitet ein Router?",o:["Schicht 2 – Sicherungsschicht","Schicht 3 – Vermittlungsschicht","Schicht 4 – Transportschicht","Schicht 7 – Anwendungsschicht"],a:1,e:"Router arbeiten auf Schicht 3 und treffen Weiterleitungsentscheidungen anhand von IP-Adressen."},
+  {c:"Netzwerktechnik",t:"Welche Aufgabe hat DHCP?",o:["Auflösung von Domänennamen in IP-Adressen","Automatische Vergabe von IP-Konfigurationen","Verschlüsselte Tunnel aufbauen","Zeitsynchronisation"],a:1,e:"DHCP weist Clients automatisch IP, Subnetzmaske, Gateway und DNS zu."},
+  {c:"Netzwerktechnik",t:"Welcher Port wird standardmäßig für HTTPS verwendet?",o:["21","80","443","8080"],a:2,e:"HTTPS nutzt TCP-Port 443. HTTP läuft auf Port 80."},
+  {c:"Netzwerktechnik",t:"Was ist der Hauptvorteil von IPv6 gegenüber IPv4?",o:["Geringere Paketgröße","Deutlich größerer Adressraum","Kein Routing nötig","Automatische Verschlüsselung"],a:1,e:"IPv6 bietet 128 Bit (≈ 3,4 × 10³⁸ Adressen) gegenüber 32 Bit bei IPv4."},
+  {c:"Netzwerktechnik",t:"Was beschreibt ein VLAN?",o:["Ein virtuelles, logisch getrenntes Netz innerhalb einer physischen Infrastruktur","Ein verschlüsseltes WLAN","Ein Backup-Netzwerk","Ein Routing-Protokoll"],a:0,e:"VLANs trennen Netzwerke logisch auf, obwohl dieselbe physische Infrastruktur genutzt wird."},
+  {c:"Netzwerktechnik",t:"Wie viele nutzbare Host-Adressen hat 192.168.10.0/26?",o:["30","62","64","126"],a:1,e:"/26 → 2^(32−26) = 64 Adressen; minus Netz + Broadcast = 62 nutzbare Hosts."},
+  {c:"Wirtschaftlichkeit",t:"Was ist das Ziel einer Nutzwertanalyse?",o:["Monetäre Kosten vergleichen","Nicht-monetäre Kriterien vergleichbar machen und Alternativen bewerten","Amortisationsdauer berechnen","Barwert bestimmen"],a:1,e:"Die Nutzwertanalyse bewertet Alternativen anhand gewichteter, nicht-monetärer Kriterien."},
+  {c:"Wirtschaftlichkeit",t:"Was ermittelt die Amortisationsrechnung?",o:["Die durchschnittliche Rendite","Die Zeit, bis sich eine Investition durch Rückflüsse bezahlt macht","Gesamtkosten über die Laufzeit","Den Barwert"],a:1,e:"Die Amortisationsdauer gibt an, wann die Anschaffungskosten durch Rückflüsse gedeckt sind."},
+  {c:"Wirtschaftlichkeit",t:"Was bedeutet TCO?",o:["Total Cost of Operation","Total Cost of Ownership","Technical Cost Overview","Total Computing Output"],a:1,e:"TCO = Total Cost of Ownership: alle Kosten über den gesamten Lebenszyklus."},
+  {c:"Wirtschaftlichkeit",t:"Welche Aussage zur Make-or-Buy-Entscheidung ist korrekt?",o:["Sie vergleicht nur Anschaffungskosten.","Sie vergleicht Eigenfertigung mit Fremdbezug unter Kosten- und Qualitätsaspekten.","Sie ist nur für Hardware relevant.","Sie ist identisch mit der Nutzwertanalyse."],a:1,e:"Make-or-Buy betrachtet neben Kosten auch Qualität, Kapazität, Know-how und strategische Faktoren."},
+  {c:"Wirtschaftlichkeit",t:"Was ist eine Kostenstelle?",o:["Ein Ort, an dem Kosten entstehen und getrennt erfasst werden","Eine Steuerart","Eine Buchungsnummer","Ein Bankkonto"],a:0,e:"Kostenstellen sind organisatorische Einheiten, denen Kosten eindeutig zugeordnet werden."},
+  {c:"Projektmanagement",t:"Was stellt ein Gantt-Diagramm dar?",o:["Abhängigkeiten als Netzplan","Zeitliche Abfolge und Dauer von Aufgaben als Balkendiagramm","Kostenverteilung","Teamstruktur"],a:1,e:"Das Gantt-Diagramm zeigt Aufgaben als horizontale Balken auf einer Zeitachse."},
+  {c:"Projektmanagement",t:"Was ist ein Meilenstein?",o:["Aufgabe mit langer Dauer","Ereignis ohne Dauer, das einen wichtigen Fortschritt markiert","Puffer für Verzögerungen","Die Endabnahme"],a:1,e:"Ein Meilenstein hat keine Dauer und markiert einen definierten Projektfortschritt."},
+  {c:"Projektmanagement",t:"Was beschreibt der kritische Pfad?",o:["Die günstigste Route","Die längste Abfolge von Vorgängen ohne Puffer","Alle parallelen Vorgänge","Den Weg zum Projektleiter"],a:1,e:"Der kritische Pfad bestimmt die minimale Projektdauer; Verzögerungen hier verzögern das gesamte Projekt."},
+  {c:"Projektmanagement",t:"Welche Rollen kennt Scrum?",o:["Projektleiter, Teamleiter, Auftraggeber","Product Owner, Scrum Master, Development Team","Chef, Stellvertreter, Praktikant","Analyst, Designer, Tester"],a:1,e:"Scrum kennt genau drei Rollen: Product Owner, Scrum Master und Development Team."},
+  {c:"Projektmanagement",t:"Unterschied Lastenheft / Pflichtenheft?",o:["Kein Unterschied","Lastenheft = Anforderungen des Auftraggebers (WAS), Pflichtenheft = Umsetzung (WIE)","Umgekehrt","Nur im Wasserfallmodell"],a:1,e:"Lastenheft: WAS gefordert ist (Auftraggeber). Pflichtenheft: WIE es umgesetzt wird (Auftragnehmer)."},
+  {c:"Projektmanagement",t:"Wofür steht BPMN?",o:["Business Process Model and Notation","Binary Process Management Network","Business Project Management Norm","Basic Programming Model Notation"],a:0,e:"BPMN ist eine standardisierte Notation zur grafischen Darstellung von Geschäftsprozessen."},
+  {c:"Projektmanagement",t:"Welches Vorgehensmodell ist durch feste Phasen und späte Auslieferung gekennzeichnet?",o:["Scrum","Kanban","Wasserfallmodell","Extreme Programming"],a:2,e:"Das Wasserfallmodell hat sequentielle Phasen und liefert das Produkt erst am Ende."},
+  {c:"IT-Sicherheit",t:"Was verlangt das Prinzip der Datenminimierung nach DSGVO?",o:["Alle Daten verschlüsseln","Nur die für den Zweck notwendigen personenbezogenen Daten erheben","Daten nach 30 Tagen löschen","Nur in der EU verarbeiten"],a:1,e:"Art. 5 DSGVO: Es dürfen nur die für den Zweck erforderlichen personenbezogenen Daten verarbeitet werden."},
+  {c:"IT-Sicherheit",t:"Merkmal asymmetrischer Verschlüsselung?",o:["Gleicher Schlüssel bei Sender und Empfänger","Schlüsselpaar: öffentlich und privat","Schneller als symmetrisch","Nur für Integrität"],a:1,e:"Asymmetrische Verfahren (RSA, ECC) nutzen einen öffentlichen und einen privaten Schlüssel."},
+  {c:"IT-Sicherheit",t:"Wofür steht die CIA-Triade?",o:["Central Intelligence Agency","Confidentiality, Integrity, Availability","Cryptography, Integrity, Authentication","Control, Inspection, Authorization"],a:1,e:"CIA = Vertraulichkeit, Integrität und Verfügbarkeit – die drei klassischen Schutzziele."},
+  {c:"IT-Sicherheit",t:"Was ist eine DMZ?",o:["Ein verschlüsselter Datenträger","Ein Pufferbereich zwischen Internet und internem Netz","Ein Backup-Server","Ein E-Mail-Protokoll"],a:1,e:"Die Demilitarisierte Zone isoliert öffentlich erreichbare Dienste vom internen Netz."},
+  {c:"IT-Sicherheit",t:"Was ist ein VPN?",o:["Ein virtuelles privates Netzwerk mit verschlüsseltem Tunnel","Ein E-Mail-Verschlüsselungsprotokoll","Ein Antivirenprogramm","Eine Datenbank"],a:0,e:"VPN = Virtual Private Network: verschlüsselte Tunnelverbindung über unsichere Netze."},
+  {c:"IT-Sicherheit",t:"Unterschied Hashing / Verschlüsselung?",o:["Nichts","Hashing umkehrbar, Verschlüsselung nicht","Verschlüsselung umkehrbar, Hashing nicht","Beide umkehrbar"],a:2,e:"Verschlüsselung ist mit Schlüssel umkehrbar. Hashing erzeugt einen Prüfwert und ist nicht umkehrbar."},
+  {c:"IT-Sicherheit",t:"Was ist TLS?",o:["Ein Verschlüsselungsprotokoll für sichere Transportverbindungen","Eine Programmiersprache","Ein Dateiformat","Ein Backup-Protokoll"],a:0,e:"TLS sichert Übertragungen (z. B. HTTPS) und löst SSL ab."},
+  {c:"IT-Sicherheit",t:"Was ist Social Engineering?",o:["Eine Angriffsmethode, die menschliches Vertrauen ausnutzt","Netzwerküberwachung","Eine Verschlüsselungstechnik","Ein Datenbankkonzept"],a:0,e:"Social Engineering manipuliert Menschen (Phishing, Anrufe), um an Informationen zu gelangen."},
+  {c:"Datenbanken",t:"Welche SQL-Anweisung fügt neue Datensätze ein?",o:["SELECT","UPDATE","INSERT INTO","ALTER TABLE"],a:2,e:"INSERT INTO fügt Datensätze in eine Tabelle ein."},
+  {c:"Datenbanken",t:"Was ist ein Primärschlüssel?",o:["Feld mit beliebigen Werten","Feld, das jeden Datensatz eindeutig identifiziert","Feld, das auf eine andere Tabelle verweist","Ein Index"],a:1,e:"Der Primärschlüssel identifiziert jeden Datensatz eindeutig."},
+  {c:"Datenbanken",t:"Was ist ein Fremdschlüssel?",o:["Verweist auf einen Primärschlüssel einer anderen Tabelle","Ein erster Schlüssel","Ein verschlüsselter Schlüssel","Ein Index"],a:0,e:"Der Fremdschlüssel stellt die referentielle Integrität zwischen Tabellen sicher."},
+  {c:"Datenbanken",t:"Was beschreibt die 3. Normalform?",o:["Keine Wiederholungsgruppen","Keine partiellen Abhängigkeiten","Keine transitiven Abhängigkeiten","Keine Redundanz überhaupt"],a:2,e:"3NF: Kein Nichtschlüsselattribut darf von einem anderen Nichtschlüsselattribut abhängen."},
+  {c:"Datenbanken",t:"Was liefert ein INNER JOIN?",o:["Alle Zeilen beider Tabellen","Nur Zeilen mit erfüllter Join-Bedingung in beiden Tabellen","Nur Zeilen der linken Tabelle","Nur Zeilen ohne Übereinstimmung"],a:1,e:"INNER JOIN verknüpft nur Datensätze, die in beiden Tabellen einen Partner haben."},
+  {c:"Datenbanken",t:"Welche Kardinalität beschreibt 1:n?",o:["Genau ein Partner","Ein Datensatz kann zu mehreren der anderen Tabelle stehen","Keine Beziehung","Beide Seiten n"],a:1,e:"Bei 1:n kann ein Datensatz der 1-Seite mehreren der n-Seite zugeordnet sein."},
+  {c:"Datenbanken",t:"Welche SQL-Anweisung filtert Datensätze?",o:["ORDER BY","GROUP BY","WHERE","HAVING"],a:2,e:"WHERE filtert Zeilen vor der Gruppierung; HAVING filtert Gruppen nach GROUP BY."},
+  {c:"Programmierung",t:"Was gibt [x*2 for x in range(3)] in Python zurück?",o:["[0, 2, 4]","[1, 2, 3]","[0, 1, 2]","[2, 4, 6]"],a:0,e:"range(3) liefert 0,1,2. Jedes Element wird ×2 gerechnet → [0, 2, 4]."},
+  {c:"Programmierung",t:"Was ist Vererbung in der OOP?",o:["Eine Klasse übernimmt Eigenschaften und Methoden einer anderen","Eine Funktion ruft sich selbst auf","Eine Variable wird verändert","Ein Datenbankzugriff"],a:0,e:"Vererbung erlaubt einer Unterklasse, Attribute und Methoden einer Oberklasse wiederzuverwenden."},
+  {c:"Programmierung",t:"Was ist Rekursion?",o:["Eine Funktion, die sich selbst aufruft","Eine Endlosschleife","Eine Datenstruktur","Ein Sortieralgorithmus"],a:0,e:"Bei der Rekursion ruft sich eine Funktion selbst auf – mit Abbruchbedingung."},
+  {c:"Programmierung",t:"Was ist die Komplexität O(n log n) typischerweise?",o:["Bubble Sort","Merge Sort","Selection Sort","Lineare Suche"],a:1,e:"Merge Sort (und Quicksort im Mittel) haben O(n log n)."},
+  {c:"Programmierung",t:"Welche Aussage zu Datentypen ist korrekt?",o:["int speichert Kommazahlen","bool speichert Wahrheitswerte","float speichert nur ganze Zahlen","string speichert Zahlen"],a:1,e:"bool speichert die Wahrheitswerte True/False."},
+  {c:"Grundlagen",t:"Welchen Dezimalwert hat die Binärzahl 1011₂?",o:["9","11","13","15"],a:1,e:"1·8 + 0·4 + 1·2 + 1·1 = 11."},
+  {c:"Grundlagen",t:"Welchen Dezimalwert hat die Hexadezimalzahl 2F₁₆?",o:["31","47","63","79"],a:1,e:"2·16 + 15 = 47."},
+  {c:"Grundlagen",t:"Was besagt das EVA-Prinzip?",o:["Eingabe – Verarbeitung – Ausgabe","Effizienz – Validierung – Ausgabe","Entwicklung – Versionierung – Archivierung","Evaluation – Verbesserung – Anwendung"],a:0,e:"EVA: Eingabe, Verarbeitung, Ausgabe – das Grundprinzip jeder Datenverarbeitung."},
+  {c:"Grundlagen",t:"Hauptvorteil einer SSD gegenüber einer HDD?",o:["Größere Kapazität","Keine mechanischen Teile, dadurch schneller und robuster","Günstiger pro GB","Lautstärker"],a:1,e:"SSDs haben keine beweglichen Teile, sind schneller, leiser und stoßfester."},
+  {c:"Grundlagen",t:"Wie viele Byte sind 1 KiB?",o:["1000","1024","2048","512"],a:1,e:"1 KiB = 2¹⁰ Byte = 1024 Byte (binäre Präfixe)."},
+  {c:"Grundlagen",t:"Zweck eines CPU-Caches?",o:["Dauerhafte Speicherung","Verkürzung der Zugriffszeit auf häufig genutzte Daten","Grafikberechnung","Netzwerkkommunikation"],a:1,e:"Der Cache ist ein schneller Zwischenspeicher zwischen CPU und RAM."},
+  {c:"Grundlagen",t:"Was bedeutet Virtualisierung?",o:["Mehrere virtuelle Systeme auf einer physischen Hardware betreiben","Programme verschlüsseln","Netzwerke trennen","Daten komprimieren"],a:0,e:"Virtualisierung erlaubt mehrere virtuelle Maschinen auf einem Host – Ressourcen werden geteilt."},
+  {c:"BWL / Recht",t:"Was kennzeichnet einen Werkvertrag?",o:["Es wird eine Tätigkeit geschuldet","Es wird ein bestimmter Erfolg geschuldet","Er ist immer kostenlos","Er betrifft nur Beamte"],a:1,e:"Beim Werkvertrag wird ein konkreter Erfolg (das Werk) geschuldet, nicht die bloße Tätigkeit."},
+  {c:"BWL / Recht",t:"Was regelt das Urheberrechtsgesetz?",o:["Den Schutz geistiger Werke wie Software, Texte und Musik","Nur Bücher","Nur Musik","Nur Patente"],a:0,e:"Das UrhG schützt Werke der Literatur, Wissenschaft und Kunst – auch Software."},
+  {c:"BWL / Recht",t:"Welche Aussage zur DSGVO ist korrekt?",o:["Sie gilt nur für Behörden","Sie gilt für alle Stellen, die personenbezogene Daten verarbeiten","Sie gilt nur in Deutschland","Sie gilt nicht für KMU"],a:1,e:"Die DSGVO gilt EU-weit für jede Stelle, die personenbezogene Daten verarbeitet."},
+  {c:"BWL / Recht",t:"Wann kommt ein Kaufvertrag nach BGB zustande?",o:["Durch Antrag und Annahme","Nur schriftlich","Nur mit Zeugen","Erst bei Lieferung"],a:0,e:"§§ 145 ff. BGB: Ein Kaufvertrag entsteht durch zwei übereinstimmende Willenserklärungen."}
+];
+
+const S={mode:"exam",pool:[],cur:0,sel:null,ans:[],time:0,tid:null,cats:new Set()};
+const $=id=>document.getElementById(id);
+const el={start:$("start-screen"),quiz:$("quiz-screen"),result:$("result-screen"),timer:$("timer"),counter:$("question-counter"),cat:$("category-label"),q:$("question-text"),opts:$("options-container"),expl:$("explanation"),confirm:$("confirm-btn"),next:$("next-btn"),prog:$("progress"),score:$("score-display"),status:$("status-display"),detail:$("detail-display"),review:$("review-container"),restart:$("restart-btn"),exp:$("export-btn"),filters:$("category-filters"),freset:$("filter-reset")};
+
+function initFilters(){
+  const cats=[...new Set(QUESTIONS.map(q=>q.c))].sort();
+  el.filters.innerHTML="";
+  cats.forEach(c=>{
+    const b=document.createElement("button");
+    b.className="filter-chip";b.textContent=c;
+    b.onclick=()=>{
+      if(S.cats.has(c)){S.cats.delete(c);b.classList.remove("active");}
+      else{S.cats.add(c);b.classList.add("active");}
+    };
+    el.filters.appendChild(b);
+  });
+}
+el.freset.onclick=()=>{S.cats.clear();document.querySelectorAll(".filter-chip").forEach(c=>c.classList.remove("active"));};
+
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function start(mode){
+  S.mode=mode;S.cur=0;S.ans=[];S.sel=null;
+  let pool=QUESTIONS.slice();
+  if(S.cats.size>0)pool=pool.filter(q=>S.cats.has(q.c));
+  pool=shuffle(pool);
+  if(mode==="train")pool=pool.slice(0,Math.min(10,pool.length));
+  if(mode==="blitz")pool=pool.slice(0,Math.min(5,pool.length));
+  S.pool=pool;
+  if(mode==="exam"){S.time=90*60;el.timer.classList.remove("hidden");startTimer();}
+  else{S.time=0;el.timer.classList.add("hidden");el.timer.textContent="";}
+  el.start.classList.add("hidden");el.result.classList.add("hidden");el.quiz.classList.remove("hidden");
+  render();
+}
+
+function startTimer(){
+  clearInterval(S.tid);updTimer();
+  S.tid=setInterval(()=>{S.time--;updTimer();if(S.time<=0){clearInterval(S.tid);finish();}},1000);
+}
+function updTimer(){
+  const m=Math.floor(S.time/60).toString().padStart(2,"0");
+  const s=(S.time%60).toString().padStart(2,"0");
+  el.timer.textContent=`${m}:${s}`;
+}
+
+function render(){
+  const q=S.pool[S.cur];S.sel=null;
+  el.counter.textContent=`Frage ${S.cur+1} von ${S.pool.length}`;
+  el.cat.textContent=q.c;el.q.textContent=q.t;
+  el.expl.classList.add("hidden");el.expl.textContent="";
+  el.confirm.disabled=true;el.confirm.classList.remove("hidden");
+  el.next.classList.add("hidden");
+  el.opts.innerHTML="";
+  q.o.forEach((o,i)=>{
+    const d=document.createElement("div");
+    d.className="option";d.textContent=o;d.dataset.i=i;
+    d.onclick=()=>{S.sel=i;document.querySelectorAll(".option").forEach(x=>x.classList.remove("selected"));d.classList.add("selected");el.confirm.disabled=false;};
+    el.opts.appendChild(d);
+  });
+  el.prog.style.width=(S.cur/S.pool.length*100)+"%";
+}
+
+el.confirm.onclick=()=>{
+  if(S.sel===null)return;
+  const q=S.pool[S.cur];const ok=S.sel===q.a;
+  S.ans.push({q,s:S.sel,ok});
+  document.querySelectorAll(".option").forEach(x=>{
+    const i=parseInt(x.dataset.i,10);
+    if(i===q.a)x.classList.add("correct");
+    if(i===S.sel&&!ok)x.classList.add("wrong");
+    x.style.pointerEvents="none";
+  });
+  el.expl.textContent=q.e;el.expl.classList.remove("hidden");
+  el.confirm.classList.add("hidden");
+  if(S.mode==="exam"){setTimeout(next,900);}
+  else{el.next.classList.remove("hidden");el.next.textContent=(S.cur+1>=S.pool.length)?"Auswertung anzeigen":"Nächste Frage";}
+};
+
+el.next.onclick=next;
+function next(){S.cur++;if(S.cur>=S.pool.length)finish();else render();}
+
+function finish(){
+  clearInterval(S.tid);
+  el.quiz.classList.add("hidden");el.result.classList.remove("hidden");
+  const total=S.ans.length;const ok=S.ans.filter(a=>a.ok).length;
+  const pct=total>0?Math.round(ok/total*100):0;const pass=pct>=50;
+  el.score.textContent=`${pct} %`;
+  el.status.textContent=pass?"✓ Bestanden":"✗ Nicht bestanden";
+  el.status.className="status "+(pass?"pass":"fail");
+  const byCat={};
+  S.ans.forEach(a=>{const c=a.q.c;if(!byCat[c])byCat[c]={t:0,o:0};byCat[c].t++;if(a.ok)byCat[c].o++;});
+  const lines=Object.entries(byCat).map(([c,v])=>`${c}: ${v.o}/${v.t}`).join(" · ");
+  el.detail.innerHTML=`${ok} von ${total} Fragen richtig · Bestehensgrenze 50 %<br><small>${lines}</small>`;
+  el.review.innerHTML="<h3>Übersicht</h3>";
+  S.ans.forEach((a,i)=>{
+    const d=document.createElement("div");
+    d.className="review-item "+(a.ok?"correct":"wrong");
+    d.innerHTML=`<div class="q">${i+1}. ${a.q.c} – ${a.q.t}</div>
+      <div class="${a.ok?"ans":"ans-bad"}">Deine Antwort: ${a.q.o[a.s]}</div>
+      ${a.ok?"":`<div class="ans">Richtig: ${a.q.o[a.q.a]}</div>`}
+      <div style="color:var(--muted);margin-top:.4rem;font-size:.85rem">${a.q.e}</div>`;
+    el.review.appendChild(d);
+  });
+}
+
+el.restart.onclick=()=>{
+  el.result.classList.add("hidden");el.start.classList.remove("hidden");
+  el.timer.textContent="90:00";clearInterval(S.tid);
+};
+
+el.exp.onclick=()=>{
+  const total=S.ans.length;const ok=S.ans.filter(a=>a.ok).length;
+  const pct=total>0?Math.round(ok/total*100):0;
+  const L=[];
+  L.push("SeeD – AP1 Prüfungssimulation");
+  L.push("Datum: "+new Date().toLocaleString("de-DE"));
+  L.push("Modus: "+S.mode);
+  L.push(`Ergebnis: ${ok}/${total} (${pct} %) – ${pct>=50?"BESTANDEN":"NICHT BESTANDEN"}`);
+  L.push("─".repeat(60));
+  S.ans.forEach((a,i)=>{
+    L.push(`\n${i+1}. [${a.q.c}] ${a.ok?"RICHTIG":"FALSCH"}`);
+    L.push(`Frage: ${a.q.t}`);
+    L.push(`Deine Antwort: ${a.q.o[a.s]}`);
+    if(!a.ok)L.push(`Richtige Antwort: ${a.q.o[a.q.a]}`);
+    L.push(`Erklärung: ${a.q.e}`);
+  });
+  const blob=new Blob([L.join("\n")],{type:"text/plain;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download=`SeeD-Ergebnis-${Date.now()}.txt`;a.click();
+  URL.revokeObjectURL(url);
+};
+
+document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>start(b.dataset.mode));
+initFilters();
+</script>
+</body>
+</html>
